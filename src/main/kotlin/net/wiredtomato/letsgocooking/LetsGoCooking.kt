@@ -8,6 +8,7 @@ import net.wiredtomato.letsgocooking.api.registry.LGCRegistries
 import net.wiredtomato.letsgocooking.init.LGCBlocks
 import net.wiredtomato.letsgocooking.init.LGCGameTypes
 import net.wiredtomato.letsgocooking.init.LGCItems
+import net.wiredtomato.letsgocooking.init.LGCScreens
 import net.wiredtomato.letsgocooking.networking.GameClosedPayload
 import net.wiredtomato.letsgocooking.networking.GameElementInteractionPayload
 import net.wiredtomato.letsgocooking.networking.OpenGameScreenPayload
@@ -26,6 +27,7 @@ object LetsGoCooking {
         LGCItems
         LGCBlocks
         LGCGameTypes
+        LGCScreens
         log.info("Hello from Common")
 
         PayloadTypeRegistry.playS2C().register(OpenGameScreenPayload.ID, OpenGameScreenPayload.CODEC)

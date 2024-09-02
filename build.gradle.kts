@@ -33,7 +33,7 @@ modSettings {
     mixinFile("${modId()}.client.mixins.json")
     mixinFile("${modId()}.mixins.json")
 
-//    accessWidener("${modId()}.accesswidener")
+    //accessWidener("${modId()}.accesswidener")
 }
 
 dependencies {

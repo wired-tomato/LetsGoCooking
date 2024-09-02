@@ -12,6 +12,9 @@ abstract class Game(val type: GameType<out Game>) {
     abstract fun title(): Text
     abstract fun init()
     abstract fun clientTick()
+    abstract fun postClientTick()
+    abstract fun serverTick(player: ServerPlayerEntity)
+    abstract fun postServerTick(player: ServerPlayerEntity)
 
     fun <T : GameElement> addElement(id: Identifier, element: T): Boolean {
         if (elements.containsKey(id)) return false
@@ -41,6 +44,13 @@ abstract class Game(val type: GameType<out Game>) {
     fun handleClientTick() {
         clientTick()
         elements.forEach { (_, element) -> element.clientTick() }
+        postClientTick()
+    }
+
+    fun handleServerTick(player: ServerPlayerEntity) {
+        serverTick(player)
+        elements.forEach { (_, element) -> element.serverTick(player) }
+        postServerTick(player)
     }
 
     fun handleServerElementInteraction(id: Identifier, player: ServerPlayerEntity, type: Interaction) {

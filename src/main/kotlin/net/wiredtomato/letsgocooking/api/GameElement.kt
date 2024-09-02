@@ -8,6 +8,7 @@ import org.joml.Vector3d
 
 abstract class GameElement internal constructor(var pos: Vector3d, val id: Id<out GameElement>) {
     open fun clientTick() {}
+    open fun serverTick(player: ServerPlayerEntity) {}
     open fun clientInteraction(interaction: Interaction) {}
     open fun serverInteraction(player: ServerPlayerEntity, interaction: Interaction) {}
 

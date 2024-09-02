@@ -1,5 +1,6 @@
 package net.wiredtomato.letsgocooking.game
 
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.wiredtomato.letsgocooking.LetsGoCooking
@@ -16,4 +17,7 @@ class IntroGame : Game(LGCGameTypes.INTRO_GAME) {
     }
 
     override fun clientTick() { }
+    override fun postClientTick() { }
+    override fun serverTick(player: ServerPlayerEntity) {}
+    override fun postServerTick(player: ServerPlayerEntity) { }
 }
