@@ -2,6 +2,7 @@ package net.wiredtomato.letsgocooking.api.registry
 
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
+import net.minecraft.registry.DynamicRegistryManager
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
 import net.wiredtomato.letsgocooking.LetsGoCooking.id
@@ -18,5 +19,9 @@ object LGCRegistries {
     object Keys {
         val GAME_TYPE = RegistryKey.ofRegistry<GameType<*>>(id("game_type"))
         val MOUSE_GESTURE = RegistryKey.ofRegistry<MouseGesture>(id("mouse_gesture"))
+    }
+
+    fun DynamicRegistryManager.gestures(): Registry<MouseGesture> {
+        return this.get(Keys.MOUSE_GESTURE)
     }
 }

@@ -9,9 +9,7 @@ import net.wiredtomato.letsgocooking.init.LGCBlocks
 import net.wiredtomato.letsgocooking.init.LGCGameTypes
 import net.wiredtomato.letsgocooking.init.LGCItems
 import net.wiredtomato.letsgocooking.init.LGCScreens
-import net.wiredtomato.letsgocooking.networking.GameClosedPayload
 import net.wiredtomato.letsgocooking.networking.GameElementInteractionPayload
-import net.wiredtomato.letsgocooking.networking.OpenGameScreenPayload
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -30,14 +28,7 @@ object LetsGoCooking {
         LGCScreens
         log.info("Hello from Common")
 
-        PayloadTypeRegistry.playS2C().register(OpenGameScreenPayload.ID, OpenGameScreenPayload.CODEC)
-        PayloadTypeRegistry.playC2S().register(GameClosedPayload.ID, GameClosedPayload.CODEC)
         PayloadTypeRegistry.playC2S().register(GameElementInteractionPayload.ID, GameElementInteractionPayload.CODEC)
-
-        ServerPlayNetworking.registerGlobalReceiver(GameClosedPayload.ID) { _, ctx ->
-            val player = ctx.player()
-            player.gameData.currentGame = null
-        }
 
         ServerPlayNetworking.registerGlobalReceiver(GameElementInteractionPayload.ID) { payload, ctx ->
             val player = ctx.player()

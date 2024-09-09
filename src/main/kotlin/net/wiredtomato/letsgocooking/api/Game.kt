@@ -1,8 +1,11 @@
 package net.wiredtomato.letsgocooking.api
 
+import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventory
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.wiredtomato.letsgocooking.api.inventory.GameSlot
 
 abstract class Game(val type: GameType<out Game>) {
     private val elements = mutableMapOf<Identifier, GameElement>()
@@ -10,11 +13,13 @@ abstract class Game(val type: GameType<out Game>) {
     private val onRemoved = mutableListOf<ElementRemoved>()
 
     abstract fun title(): Text
-    abstract fun init()
-    abstract fun clientTick()
-    abstract fun postClientTick()
-    abstract fun serverTick(player: ServerPlayerEntity)
-    abstract fun postServerTick(player: ServerPlayerEntity)
+    open fun init() {}
+    open fun clientTick() {}
+    open fun postClientTick() {}
+    open fun serverTick(player: ServerPlayerEntity) {}
+    open fun postServerTick(player: ServerPlayerEntity) {}
+    open fun createSlots(): List<GameSlot<Inventory>> = listOf()
+    open fun createPlayerSlots(): List<GameSlot<PlayerInventory>> = listOf()
 
     fun <T : GameElement> addElement(id: Identifier, element: T): Boolean {
         if (elements.containsKey(id)) return false

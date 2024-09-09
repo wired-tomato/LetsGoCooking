@@ -9,7 +9,3 @@ fun <T: GuiElement> T.interact(element: GameElement, interaction: Interaction) {
     element.clientInteraction(interaction)
     ClientPlayNetworking.send(GameElementInteractionPayload(id, interaction))
 }
-
-fun sendCloseGame() {
-    ClientPlayNetworking.send(GameClosedPayload)
-}

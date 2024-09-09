@@ -6,8 +6,11 @@ import com.google.gson.GsonBuilder
 import com.mojang.serialization.Codec
 import com.mojang.serialization.JsonOps
 import com.mojang.serialization.codecs.RecordCodecBuilder
+import io.netty.buffer.ByteBuf
 import kotlinx.serialization.UseSerializers
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
 import net.minecraft.util.Identifier
 import net.wiredtomato.letsgocooking.api.data.serialization.Vector2dCodec
 import net.wiredtomato.letsgocooking.api.data.serialization.Vector2dSerializer
@@ -91,17 +94,18 @@ class MouseGestureRecognizer(
         reset()
     }
 
-    fun findMatch(): MouseGesture? {
+    fun findMatch(): MouseGesture.Instance? {
         return gestures.minByOrNull { averageDifference(currentGesture.build(standardRatio, pointsPerGesture), it) }
+            ?.let { currentGesture.instanced(it) }
     }
 
-    fun findMatchWithinDifference(differenceRange: ClosedFloatingPointRange<Double> = 0.0..150.0): Pair<MouseGesture, Double>? {
+    fun findMatchWithinDifference(differenceRange: ClosedFloatingPointRange<Double> = 0.0..150.0): Pair<MouseGesture.Instance, Double>? {
         val thisGesture = currentGesture.build(standardRatio, pointsPerGesture)
         val map = gestures.associateWith { averageDifference(thisGesture, it) }
         val minimumDifference = map.minByOrNull { (_, difference) -> difference } ?: return null
 
         return if (minimumDifference.value in differenceRange) {
-            minimumDifference.toPair()
+            currentGesture.instanced(minimumDifference.key) to minimumDifference.value
         } else null
     }
 
@@ -265,6 +269,11 @@ class MouseGestureBuilder(
         return totalDistance
     }
 
+    fun instanced(gesture: MouseGesture) = gesture.instance(startingPoint)
+
+    fun buildInstance(ratio: Double = 100.0, requiredPoints: Int): MouseGesture.Instance =
+        build(ratio, requiredPoints).instance(startingPoint)
+
     fun build(ratio: Double = 100.0, requiredPoints: Int = 30): MouseGesture {
         return mapPoints(ratio, requiredPoints)
     }
@@ -275,12 +284,56 @@ class MouseGestureBuilder(
     }
 }
 
-data class MouseGesture(
+open class MouseGesture(
     val points: List<Vector2d>,
     val name: Identifier,
     val max: Vector2d,
     val min: Vector2d
 ) {
+    fun instance(startPos: Vector2d) = Instance(this, startPos)
+
+    data class Instance(
+        val gesture: MouseGesture,
+        val startPos: Vector2d
+    ) : MouseGesture(gesture.points, gesture.name, gesture.max, gesture.min) {
+        val endPos = gesture.points.last().add(startPos, Vector2d())
+
+        companion object {
+            val PACKET_CODEC: PacketCodec<PacketByteBuf, Instance> = PacketCodec.create(::packetEncode, ::packetDecode)
+
+            private fun packetEncode(buf: PacketByteBuf, instance: Instance) {
+                buf.writeCollection(instance.points) { subBuf, vec ->
+                    subBuf.writeVec2d(vec)
+                }
+
+                buf.writeIdentifier(instance.name)
+                buf.writeVec2d(instance.max)
+                buf.writeVec2d(instance.min)
+                buf.writeVec2d(instance.startPos)
+            }
+
+            private fun packetDecode(buf: PacketByteBuf): Instance {
+                val points = buf.readList { subBuf ->
+                    subBuf.readVec2d()
+                }
+
+                val name = buf.readIdentifier()
+                val max = buf.readVec2d()
+                val min = buf.readVec2d()
+                val startPos = buf.readVec2d()
+
+                return Instance(MouseGesture(points, name, max, min), startPos)
+            }
+
+            private fun ByteBuf.writeVec2d(vec: Vector2d) {
+                writeDouble(vec.x)
+                writeDouble(vec.y)
+            }
+
+            private fun ByteBuf.readVec2d() = Vector2d(readDouble(), readDouble())
+        }
+    }
+
     companion object {
         val CODEC: Codec<MouseGesture> = RecordCodecBuilder.create {
             it.group(

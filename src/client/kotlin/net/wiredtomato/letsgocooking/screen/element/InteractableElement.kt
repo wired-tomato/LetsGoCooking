@@ -5,13 +5,15 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.wiredtomato.letsgocooking.api.GameElement
 import net.wiredtomato.letsgocooking.api.MouseClick
+import net.wiredtomato.letsgocooking.api.MouseGestureInteraction
 import net.wiredtomato.letsgocooking.api.Sized
 import net.wiredtomato.letsgocooking.api.gui.GuiElement
+import net.wiredtomato.letsgocooking.api.input.MouseGesture
 import net.wiredtomato.letsgocooking.networking.interact
 import org.joml.Vector2d
 import java.util.function.Consumer
 
-abstract class ClickableElement<T: GameElement>(protected val element: T) : GuiElement {
+abstract class InteractableElement<T: GameElement>(protected val element: T) : GuiElement {
     private var focused = false
 
     override fun setFocused(focused: Boolean) {
@@ -26,6 +28,11 @@ abstract class ClickableElement<T: GameElement>(protected val element: T) : GuiE
 
     override fun setY(y: Int) {
         element.pos.y = y.toDouble()
+    }
+
+    fun sendMouseGesture(gesture: MouseGesture.Instance) {
+        val interaction = MouseGestureInteraction(gesture)
+        interact(element, interaction)
     }
 
     override fun getX(): Int = element.pos.x.toInt()
